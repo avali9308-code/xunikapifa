@@ -45,7 +45,6 @@ h1{text-align:center;color:#222;margin-bottom:40px;font-size:28px}
   <?php else: ?>
   <div class="grid">
     <?php foreach ($products as $p):
-      $stock = db()->prepare("SELECT COUNT(*) FROM cards WHERE product_id=? AND status=0")->execute([$p["id"]]) ?: 0;
       $stock = db()->query("SELECT COUNT(*) FROM cards WHERE product_id={$p['id']} AND status=0")->fetchColumn();
     ?>
     <div class="card">
