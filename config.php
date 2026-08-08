@@ -22,8 +22,56 @@ function init_db() {
         @chmod(DB_PATH, 0666);
     }
 }
-init_db();
-function h($s){return htmlspecialchars($s,ENT_QUOTES,"UTF-8");}
-function go($u){header("Location: $u");exit;}
-function is_admin(){return !empty($_SESSION["admin"]);}
-function ono(){return date("YmdHis").str_pad(mt_rand(1,9999),4,"0",STR_PAD_LEFT);}
+function init_db() {
+    $dbFile = DB_PATH;
+    $needsTables = false;
+
+    // 数据库文件不存在 → 需要新建
+    if (!file_exists($dbFile)) {
+        $needsTables = true;
+    } else {
+        // 文件存在但为空 → 也需要建表
+        if (filesize($dbFile) == 0) {
+            $needsTables = true;
+            // 删掉空文件，让 PDO 重新干净地创建
+            @unlink($dbFile);
+        }
+    }
+
+    if ($needsTables) {
+        try {
+            $d = db();
+            // 商品表
+            $d->exec("CREATE TABLE IF NOT EXISTS products (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                price REAL NOT NULL DEFAULT 0,
+                description TEXT DEFAULT '',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )");
+            // 卡密表
+            $d->exec("CREATE TABLE IF NOT EXISTS cards (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL,
+                code TEXT NOT NULL,
+                status INTEGER DEFAULT 0,
+                order_no TEXT DEFAULT '',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )");
+            // 订单表
+            $d->exec("CREATE TABLE IF NOT EXISTS orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_no TEXT UNIQUE NOT NULL,
+                product_id INTEGER NOT NULL,
+                product_name TEXT NOT NULL,
+                price REAL NOT NULL,
+                email TEXT DEFAULT '',
+                code TEXT DEFAULT '',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )");
+            @chmod($dbFile, 0666);
+        } catch (Exception $e) {
+            die("建表失败：" . $e->getMessage());
+        }
+    }
+}
