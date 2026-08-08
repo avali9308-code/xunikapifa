@@ -1,0 +1,1 @@
+<?php require '../config.php'; if(!is_admin())go('login.php');
