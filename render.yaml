@@ -1,7 +1,0 @@
-services:
-  - type: web
-    name: my-shop
-    env: php
-    plan: free
-    buildCommand: mkdir -p data && chmod -R 777 data
-    startCommand: php -S 0.0.0.0:10000 -t .
